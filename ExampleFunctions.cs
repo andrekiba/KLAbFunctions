@@ -47,9 +47,11 @@ namespace KLabFunctions
             [BlobTrigger("netflix-files/{filename}.{ext}")]Stream file,
             string filename,
             string ext,
-            [Table("netflixShows")] CloudTable netflixShows,
+            [Table("shows")] CloudTable shows,
             ILogger log)
         {
+
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
             log.LogInformation($"C# Blob trigger function Processed blob\n Name:{filename} \n Size: {file.Length} Bytes");
 
@@ -68,18 +70,18 @@ namespace KLabFunctions
                 {
                     var query = new TableQuery<NetflixShow>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey));
 
-                    foreach (var oldShow in await netflixShows.ExecuteQuerySegmentedAsync(query, null))
+                    foreach (var oldShow in await shows.ExecuteQuerySegmentedAsync(query, null))
                     {
                         deleteBatch.Delete(oldShow);
                     }
 
                     if (deleteBatch.Any())
-                        await netflixShows.ExecuteBatchAsync(deleteBatch);
+                        await shows.ExecuteBatchAsync(deleteBatch);
 
                     tempShows.ForEach(s => insertBatch.Insert(s));
 
                     if (insertBatch.Any())
-                        await netflixShows.ExecuteBatchAsync(insertBatch);
+                        await shows.ExecuteBatchAsync(insertBatch);
                 }
             }
             catch (Exception e)
@@ -92,8 +94,8 @@ namespace KLabFunctions
         {
             var culture = new CultureInfo("it-IT");
             var tempShows = new List<NetflixShow>();
-
-            using (var reader = ExcelReaderFactory.CreateReader(file))
+            
+            using (var reader = ExcelReaderFactory.CreateCsvReader(file))
             {
                 var index = 1;
 
