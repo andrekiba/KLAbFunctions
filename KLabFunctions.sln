@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.271
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KLabFunctions", "KLabFunctions.csproj", "{A63A80FF-C4B1-4A49-9CC2-E92AC67040A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KLabFunctions", "KLabFunctions\KLabFunctions.csproj", "{A63A80FF-C4B1-4A49-9CC2-E92AC67040A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

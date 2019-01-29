@@ -3,7 +3,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace KLabFunctions.Models
 {
-    public class NetflixShow : TableEntity
+    public class Show : TableEntity
     {
         public string Title { get; set; }
         public string Rating { get; set; }

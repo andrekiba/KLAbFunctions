@@ -68,7 +68,7 @@ namespace KLabFunctions
 
                 if (tempShows.Any())
                 {
-                    var query = new TableQuery<NetflixShow>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey));
+                    var query = new TableQuery<Show>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey));
 
                     foreach (var oldShow in await shows.ExecuteQuerySegmentedAsync(query, null))
                     {
@@ -90,10 +90,10 @@ namespace KLabFunctions
             }
         }
 
-        static List<NetflixShow> GetTempShows(Stream file, string filename, string partionKey, ILogger log)
+        static List<Show> GetTempShows(Stream file, string filename, string partionKey, ILogger log)
         {
             var culture = new CultureInfo("it-IT");
-            var tempShows = new List<NetflixShow>();
+            var tempShows = new List<Show>();
             
             using (var reader = ExcelReaderFactory.CreateCsvReader(file))
             {
@@ -121,7 +121,7 @@ namespace KLabFunctions
                         var releaseYearValue = reader.GetValue(4);
                         var releaseDate = reader.GetDateTime(4);
                             
-                        tempShows.Add(new NetflixShow
+                        tempShows.Add(new Show
                         {
                             RowKey = Guid.NewGuid().ToString(),
                             PartitionKey = partionKey,
