@@ -9,8 +9,7 @@ var app = new Vue({
     },
     methods: {
         createSession: function() {
-            fetch(`${baseAddress}/api/session`, { method: "POST",
-                body: JSON.stringify({ description: this.newSession} )})
+            fetch(`${baseAddress}/api/session`, { method: "POST", body: JSON.stringify({ description: this.newSession} )})
                 .then(response => response.json())
                 .then(json => {
                     this.sessions.push(json);
