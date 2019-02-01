@@ -18,6 +18,7 @@ namespace KLabFunctions
 {
     public static class ExampleFunctions
     {
+        [Disable]
         [FunctionName("HttpTriggerExample")]
         public static async Task<IActionResult> HttpTriggerExample(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
@@ -36,12 +37,14 @@ namespace KLabFunctions
                 : new BadRequestObjectResult("Please pass a name on the query string or in the request body");
         }
 
+        [Disable]
         [FunctionName("TimerExample")]
         public static void TimerExample([TimerTrigger("0 */2 * * * *")]TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
         }
 
+        //[Disable]
         [FunctionName("BlobExample")]
         public static async Task BlobExample(
             [BlobTrigger("netflix-files/{filename}.{ext}")]Stream file,
@@ -78,10 +81,13 @@ namespace KLabFunctions
                     if (deleteBatch.Any())
                         await shows.ExecuteBatchAsync(deleteBatch);
 
-                    tempShows.ForEach(s => insertBatch.Insert(s));
+                    await shows.ExecuteInsertBatchAsync(tempShows.Cast<TableEntity>().ToList());
 
-                    if (insertBatch.Any())
-                        await shows.ExecuteBatchAsync(insertBatch);
+                    //tempShows.ForEach(s => insertBatch.Insert(s));
+
+                    //if (insertBatch.Any())
+                    //    await shows.ExecuteBatchAsync(insertBatch);
+
                 }
             }
             catch (Exception e)
@@ -97,12 +103,18 @@ namespace KLabFunctions
             
             using (var reader = ExcelReaderFactory.CreateCsvReader(file))
             {
-                var index = 1;
+                var index = 0;
 
                 while (reader.Read())
                 {
                     try
                     {
+                        if (index == 0)
+                        {
+                            index++;
+                            continue;
+                        }
+
                         if (reader.IsDBNull(0))
                             continue;
 
@@ -119,8 +131,8 @@ namespace KLabFunctions
                         var ratingDesc = ratingDesclValue?.ToString() ?? string.Empty;
 
                         var releaseYearValue = reader.GetValue(4);
-                        var releaseDate = reader.GetDateTime(4);
-                            
+                        var releaseYear = releaseYearValue?.ToString() ?? string.Empty;
+
                         tempShows.Add(new Show
                         {
                             RowKey = Guid.NewGuid().ToString(),
@@ -129,7 +141,7 @@ namespace KLabFunctions
                             Rating = rating,
                             RatingLevel = ratingLevel,
                             RatingDescription = ratingDesc,
-                            ReleaseYear = releaseDate
+                            ReleaseYear = releaseYear
                         });
 
                         index++;
@@ -142,6 +154,42 @@ namespace KLabFunctions
             }
 
             return tempShows;
+        }      
+    }
+
+    public static class CloudTableExtensions
+    {
+        public static async Task ExecuteInsertBatchAsync(this CloudTable table, List<TableEntity> entities)
+        {
+            var taskCount = 0;
+            const int taskThreshold = 200;
+            var batchTasks = new List<Task<IList<TableResult>>>();
+
+            for (var i = 0; i < entities.Count; i += 100)
+            {
+                taskCount++;
+
+                var batchItems = entities.Skip(i)
+                    .Take(100)
+                    .ToList();
+
+                var batch = new TableBatchOperation();
+                foreach (var item in batchItems)
+                {
+                    batch.Insert(item);
+                }
+
+                var task = table.ExecuteBatchAsync(batch);
+                batchTasks.Add(task);
+
+                if (taskCount < taskThreshold)
+                    continue;
+
+                await Task.WhenAll(batchTasks);
+                taskCount = 0;
+            }
+
+            await Task.WhenAll(batchTasks);
         }
     }
 }

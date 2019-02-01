@@ -1,4 +1,9 @@
-.completed {
+.accepted {
+    font-weight: bold; 
+    color: lightseagreen;
+}
+
+.rejected {
     text-decoration: line-through;
-    color: gray;
+    color: rebeccapurple;
 }

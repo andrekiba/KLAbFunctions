@@ -29,7 +29,11 @@ var app = new Vue({
                 .catch(reason => this.error = `Failed to delete session: ${reason}`);
         },
         updateSession: function(session) {
-            const body = JSON.stringify({ isAccepted: session.isAccepted });
+            const body = JSON.stringify(
+                { 
+                    accepted: session.accepted, 
+                    rejected: session.rejected 
+                });
             fetch(`${baseAddress}/api/session/${session.id}`, 
                 { method: "PUT", body: body})
                 .catch(reason => this.error = `Failed to update session: ${reason}`);

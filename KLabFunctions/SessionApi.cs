@@ -81,7 +81,8 @@ namespace KLabFunctions
             }
 
             var existingRow = (SessionEntity) findResult.Result;
-            existingRow.IsAccepted = updated.IsAccepted;
+            existingRow.Accepted = updated.Accepted;
+            existingRow.Rejected = updated.Rejected;
             if (!string.IsNullOrEmpty(updated.Description))
                 existingRow.Description = updated.Description;
 

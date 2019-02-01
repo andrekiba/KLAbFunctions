@@ -9,6 +9,6 @@ namespace KLabFunctions.Models
         public string Rating { get; set; }
         public string RatingLevel { get; set; }
         public string RatingDescription { get; set; }
-        public DateTime ReleaseYear { get; set; }
+        public string ReleaseYear { get; set; }
     }
 }

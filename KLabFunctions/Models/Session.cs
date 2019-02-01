@@ -8,7 +8,8 @@ namespace KLabFunctions.Models
         public string Id { get; set; } = Guid.NewGuid().ToString("n");
         public DateTime CreatedTime { get; set; } = DateTime.UtcNow;
         public string Description { get; set; }
-        public bool IsAccepted { get; set; }
+        public bool Accepted { get; set; }
+        public bool Rejected { get; set; }
     }
 
     public class CreateSession
@@ -19,14 +20,16 @@ namespace KLabFunctions.Models
     public class UpdateSession
     {
         public string Description { get; set; }
-        public bool IsAccepted { get; set; }
+        public bool Accepted { get; set; }
+        public bool Rejected { get; set; }
     }
 
     public class SessionEntity : TableEntity
     {
         public DateTime CreatedTime { get; set; }
         public string Description { get; set; }
-        public bool IsAccepted { get; set; }
+        public bool Accepted { get; set; }
+        public bool Rejected { get; set; }
     }
 
     public static class Mappings
@@ -38,8 +41,9 @@ namespace KLabFunctions.Models
                 PartitionKey = "SESSION",
                 RowKey = session.Id,
                 CreatedTime = session.CreatedTime,
-                IsAccepted = session.IsAccepted,
-                Description = session.Description
+                Description = session.Description,
+                Accepted = session.Accepted,
+                Rejected = session.Rejected
             };
         }
 
@@ -49,8 +53,9 @@ namespace KLabFunctions.Models
             {
                 Id = se.RowKey,
                 CreatedTime = se.CreatedTime,
-                IsAccepted = se.IsAccepted,
-                Description = se.Description
+                Description = se.Description,
+                Accepted = se.Accepted,
+                Rejected = se.Rejected
             };
         }
 

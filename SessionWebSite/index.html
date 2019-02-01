@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Sessions</title>
+    <title>Azure Functions CFP</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
@@ -13,7 +13,7 @@
   </head>
   <body>
     <div class="text-center bg-light mb-0">
-        <h1>Azure Functions Sessions</h1>
+        <h1>Azure Functions CFP</h1>
         <p>KLab #1 2019!</p>
     </div>
     <div id="app" class="container">
@@ -25,12 +25,20 @@
         <div class="row" v-for="session in sessions" :key="session.id">
 
             <div class="form-check mb-2 mr-sm-2">
-                <label class="form-check-label">
-                    <input class="form-check-input" v-model="session.isAccepted" type="checkbox" @change="updateSession(session)">
-                    <span v-bind:class="{ accepted: session.isAccepted }">{{session.Description}}</span>
-                </label>
+                <input type="checkbox" id="accept" v-model="session.accepted" @change="updateSession(session)">
+                <label for="accept">ACCEPT</label>
+                <input type="checkbox" id="reject" v-model="session.rejected" @change="updateSession(session)">
+                <label for="reject">REJECT</label>
+                
+                <span v-bind:class="{ accepted: session.accepted, rejected: session.rejected }">{{session.description}}</span>
+                
+                <!-- <label class="form-check-label">
+                    <input class="form-check-input" v-model="session.accepted" type="checkbox" @change="updateSession(session)">
+                    <input class="form-check-input" v-model="session.rejected" type="checkbox" @change="updateSession(session)">
+                    <span v-bind:class="{ accepted: session.isAccepted, rejected: session.rejected }">{{session.description}}</span>
+                </label> -->
             </div>
-            <a v-if="!session.isAccepted" @click="deleteSession(session)"><i class="fa fa-trash"></i></a>
+            <a v-if="!session.accepted" @click="deleteSession(session)"><i class="fa fa-trash"></i></a>
                 
             </button>
         </div>
