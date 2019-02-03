@@ -6,47 +6,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using ExcelDataReader;
 using KLabFunctions.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Table;
-using Newtonsoft.Json;
 
 namespace KLabFunctions
 {
-    public static class ExampleFunctions
+    public static class ImportExample
     {
-        [Disable]
-        [FunctionName("HttpTriggerExample")]
-        public static async Task<IActionResult> HttpTriggerExample(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
-            ILogger log)
-        {
-            log.LogInformation("C# HTTP trigger function processed a request.");
-
-            string name = req.Query["name"];
-
-            var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            name = name ?? data?.name;
-
-            return name != null
-                ? (ActionResult)new OkObjectResult($"Hello, {name}")
-                : new BadRequestObjectResult("Please pass a name on the query string or in the request body");
-        }
-
-        [Disable]
-        [FunctionName("TimerExample")]
-        public static void TimerExample([TimerTrigger("0 */2 * * * *")]TimerInfo myTimer, ILogger log)
-        {
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
-        }
-
-        //[Disable]
-        [FunctionName("BlobExample")]
-        public static async Task BlobExample(
+        [FunctionName("ImportNetflix")]
+        public static async Task ImportNetflix(
             [BlobTrigger("netflix-files/{filename}.{ext}")]Stream file,
             string filename,
             string ext,
@@ -64,8 +33,6 @@ namespace KLabFunctions
                     return;
 
                 var partitionKey = Path.GetFileName(filename);
-                var insertBatch = new TableBatchOperation();
-                var deleteBatch = new TableBatchOperation();
 
                 var tempShows = GetTempShows(file, filename, partitionKey, log);
 
@@ -73,21 +40,12 @@ namespace KLabFunctions
                 {
                     var query = new TableQuery<Show>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey));
 
-                    foreach (var oldShow in await shows.ExecuteQuerySegmentedAsync(query, null))
-                    {
-                        deleteBatch.Delete(oldShow);
-                    }
+                    var oldShows = await shows.ExecuteQuerySegmentedAsync(query, null);
 
-                    if (deleteBatch.Any())
-                        await shows.ExecuteBatchAsync(deleteBatch);
+                    if(oldShows.Any())
+                        await shows.ExecuteParallelBatchAsync(TableOperationType.Delete, oldShows.Cast<ITableEntity>().ToList());
 
-                    await shows.ExecuteInsertBatchAsync(tempShows.Cast<TableEntity>().ToList());
-
-                    //tempShows.ForEach(s => insertBatch.Insert(s));
-
-                    //if (insertBatch.Any())
-                    //    await shows.ExecuteBatchAsync(insertBatch);
-
+                    await shows.ExecuteParallelBatchAsync(TableOperationType.Insert, tempShows.Cast<ITableEntity>().ToList());
                 }
             }
             catch (Exception e)
@@ -159,24 +117,45 @@ namespace KLabFunctions
 
     public static class CloudTableExtensions
     {
-        public static async Task ExecuteInsertBatchAsync(this CloudTable table, List<TableEntity> entities)
+        public static async Task ExecuteParallelBatchAsync(this CloudTable table, TableOperationType oType, IList<ITableEntity> entities)
         {
             var taskCount = 0;
             const int taskThreshold = 200;
+            const int maxBatchSize = 100;
             var batchTasks = new List<Task<IList<TableResult>>>();
 
-            for (var i = 0; i < entities.Count; i += 100)
+            for (var i = 0; i < entities.Count; i += maxBatchSize)
             {
                 taskCount++;
 
                 var batchItems = entities.Skip(i)
-                    .Take(100)
+                    .Take(maxBatchSize)
                     .ToList();
 
                 var batch = new TableBatchOperation();
-                foreach (var item in batchItems)
+
+                switch (oType)
                 {
-                    batch.Insert(item);
+                    case TableOperationType.Insert:
+                        batchItems.ForEach(e => batch.Insert(e));
+                        break;
+                    case TableOperationType.Delete:
+                        batchItems.ForEach(e => batch.Delete(e));
+                        break;
+                    case TableOperationType.Replace:
+                        batchItems.ForEach(e => batch.Replace(e));
+                        break;
+                    case TableOperationType.Merge:
+                        batchItems.ForEach(e => batch.Merge(e));
+                        break;
+                    case TableOperationType.InsertOrReplace:
+                        batchItems.ForEach(e => batch.InsertOrReplace(e));
+                        break;
+                    case TableOperationType.InsertOrMerge:
+                        batchItems.ForEach(e => batch.InsertOrMerge(e));
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(oType), oType, null);
                 }
 
                 var task = table.ExecuteBatchAsync(batch);

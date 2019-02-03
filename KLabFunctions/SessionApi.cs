@@ -18,12 +18,13 @@ namespace KLabFunctions
         const string TableName = "sessions";
         const string QueueName = "sessions";
         const string PartionKey = "SESSION";
+        const string StorageConnection = "AzureWebJobsStorage";
 
         [FunctionName("CreateSession")]
         public static async Task<IActionResult> CreateSession(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "session")] HttpRequest req,
-            [Table(TableName, Connection = "AzureWebJobsStorage")] IAsyncCollector<SessionEntity> sessionTable,
-            [Queue(QueueName, Connection = "AzureWebJobsStorage")] IAsyncCollector<Session> sessionQueue,
+            [Table(TableName, Connection = StorageConnection)] IAsyncCollector<SessionEntity> sessionTable,
+            [Queue(QueueName, Connection = StorageConnection)] IAsyncCollector<Session> sessionQueue,
             ILogger log)
         {
             log.LogInformation("Creating a new session");
@@ -39,7 +40,7 @@ namespace KLabFunctions
         [FunctionName("GetSessions")]
         public static async Task<IActionResult> GetSessions(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "session")] HttpRequest req,
-            [Table(TableName, Connection = "AzureWebJobsStorage")] CloudTable sessionTable,
+            [Table(TableName, Connection = StorageConnection)] CloudTable sessionTable,
             ILogger log)
         {
             log.LogInformation("Getting sessions");
@@ -51,7 +52,7 @@ namespace KLabFunctions
         [FunctionName("GetSessionById")]
         public static IActionResult GetSessionById(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "session/{id}")] HttpRequest req,
-            [Table(TableName, PartionKey, "{id}", Connection = "AzureWebJobsStorage")] SessionEntity se,
+            [Table(TableName, PartionKey, "{id}", Connection = StorageConnection)] SessionEntity se,
             ILogger log,
             string id)
         {
@@ -66,7 +67,7 @@ namespace KLabFunctions
         public static async Task<IActionResult> UpdateSession(
             [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "session/{id}")]
             HttpRequest req,
-            [Table(TableName, Connection = "AzureWebJobsStorage")] CloudTable sessionTable,
+            [Table(TableName, Connection = StorageConnection)] CloudTable sessionTable,
             ILogger log,
             string id)
         {
@@ -94,7 +95,7 @@ namespace KLabFunctions
         [FunctionName("DeleteSession")]
         public static async Task<IActionResult> DeleteSession(
             [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "session/{id}")]HttpRequest req,
-            [Table(TableName, Connection = "AzureWebJobsStorage")] CloudTable sessionTable,
+            [Table(TableName, Connection = StorageConnection)] CloudTable sessionTable,
             ILogger log,
             string id)
         {
