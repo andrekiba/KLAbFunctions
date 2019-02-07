@@ -1,45 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="utf-8">
     <title>Azure Functions CFP</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/content/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>       
-  </head>
-  <body>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body>
     <div class="text-center bg-light mb-0">
         <h1>Azure Functions CFP</h1>
         <p>KLab #1 2019!</p>
     </div>
     <div id="app" class="container">
         <div class="row mb-2">
-            <input type="text" class="form-control" placeholder="New session" 
-                v-model="newSession"
+            <input type="text" class="form-control" placeholder="New session" v-model="newSession"
                 v-on:keydown.enter="createSession">
         </div>
         <div class="row" v-for="session in sessions" :key="session.id">
 
+            <!-- <div class="mb-2 mr-sm-2"> -->
+            <!-- <div class="btn-group">
+                    <button type="button" class="btn btn-outline-info btn-sm" v-bind:class="{ disabled: session.accepted || session.rejected }" @click="updateSession(session)">ACCEPT</button>
+                    <button type="button" class="btn btn-outline-warning btn-sm" v-bind:class="{ disabled: session.accepted || session.rejected }" @click="updateSession(session)">REJECT</button>
+                </div>
+                &nbsp;
+                <span v-bind:class="{ accepted: session.accepted, rejected: session.rejected }">{{session.description}}</span> -->
+
+            <!-- <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                    <label class="btn btn-outline-info btn-sm" v-bind:class="{ active: session.accepted, disabled: session.rejected }">
+                        <input type="radio" name="options" id="option1" autocomplete="off"
+                        @click="updateSession(session)"> ACCEPT
+                    </label>
+                    <label class="btn btn-outline-warning btn-sm" v-bind:class="{ disabled: session.accepted, active: session.rejected }">
+                        <input type="radio" name="options" id="option2" autocomplete="off"
+                        @click="updateSession(session)"> REJECT
+                    </label>
+                </div>
+                &nbsp;
+                <span v-bind:class="{ accepted: session.accepted, rejected: session.rejected }">{{session.description}}</span> -->
+
+            <!-- </div> -->
             <div class="form-check mb-2 mr-sm-2">
                 <input type="checkbox" id="accept" v-model="session.accepted" @change="updateSession(session)">
                 <label for="accept">ACCEPT</label>
                 <input type="checkbox" id="reject" v-model="session.rejected" @change="updateSession(session)">
                 <label for="reject">REJECT</label>
-                
-                <span v-bind:class="{ accepted: session.accepted, rejected: session.rejected }">{{session.description}}</span>
-                
-                <!-- <label class="form-check-label">
-                    <input class="form-check-input" v-model="session.accepted" type="checkbox" @change="updateSession(session)">
-                    <input class="form-check-input" v-model="session.rejected" type="checkbox" @change="updateSession(session)">
-                    <span v-bind:class="{ accepted: session.isAccepted, rejected: session.rejected }">{{session.description}}</span>
-                </label> -->
+                <span
+                    v-bind:class="{ accepted: session.accepted, rejected: session.rejected }">{{session.description}}</span>
             </div>
             <a v-if="!session.accepted" @click="deleteSession(session)"><i class="fa fa-trash"></i></a>
-                
+
             </button>
         </div>
         <div class="row" v-if="error">
@@ -48,6 +65,7 @@
             </div>
         </div>
     </div>
-    <script src="script.js"></script>
+    <script src="/content/script.js"></script>
 </body>
+
 </html>
